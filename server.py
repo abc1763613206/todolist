@@ -14,19 +14,26 @@ app = Flask(__name__)
 config.init()
 from config import config 
 
+user_set = spider.get_user_set()
 name_set = spider.get_problem_list()
-user_set = spider.download_user_set()
 
 @app.route('/api/download_user_set', methods=['POST'])
 def download_user_set():
     global user_set
-    user_set = spider.download_user_set()
+    user_set = spider.get_user_set()
     return ''
 
 @app.route('/api/download_problem_name', methods=['POST'])
 def download_problem_name():
     global name_set
     name_set = spider.download_problem_list()
+    return ''
+
+@app.route('/api/delete_problem', methods=['POST'])
+def delete_problem():
+    global problem_set
+    problem.delete(int(request.form['index']))
+    problem_set = problem.load()
     return ''
 
 @app.route('/api/add_problem', methods=['POST'])
@@ -58,8 +65,9 @@ def index():
                 'id': problem.id,
                 'url': spider.get_url(problem.id),
                 'name': name_set[problem.id],
+                'index': problem_set.index(problem),
                 'status': [
-                    (problem.id in user.ac_list)
+                    problem.id in user.ac_list
                     for user in user_set
                 ]
             }
